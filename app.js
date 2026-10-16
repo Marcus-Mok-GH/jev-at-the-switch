@@ -579,6 +579,9 @@ setWalletUI();
 refreshBalance();
 if (key) {
   startGame();
+} else if (new URLSearchParams(location.search).get("peek")) {
+  peeked = true;
+  startGame();
 } else {
   showScreen("welcome");
 }
