@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev at the Switch — a trolley problem game</title>
+<meta name="description" content="Face eight trolley problems, make the call, then see what Jev — the Pollinations decision model — would do, with calibrated confidence. You pay with your own Pollen.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🚋</text></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="wordmark"><span class="tram">🚋</span> <b>Jev at the Switch</b></div>
+  <div class="wallet" id="wallet">
+    <span class="chip pollen" id="pollenChip" hidden></span>
+    <button class="ghost" id="signOutBtn" hidden>Sign out</button>
+  </div>
+</header>
+
+<main>
+  <!-- WELCOME -->
+  <section id="screen-welcome" class="screen">
+    <h1>Would you pull the lever?</h1>
+    <p class="lede">Eight runaway-trolley dilemmas. You make the call, then <b>Jev</b> —
+      a fast, cheap <i>decision model</i> — answers the same question and shows exactly
+      how sure it is. It doesn't write text. It returns a choice, moral scores, and
+      calibrated probabilities.</p>
+
+    <div class="steps">
+      <div class="step"><span>1</span><div><b>Connect your Pollen wallet</b><p>You authorize the app to spend your own Pollen — never ours (Bring Your Own Pollen).</p></div></div>
+      <div class="step"><span>2</span><div><b>Face the dilemmas</b><p>Eight classic variations, from the original lever to the transplant ward.</p></div></div>
+      <div class="step"><span>3</span><div><b>Compare with Jev</b><p>Every verdict bills your balance a fraction of a Pollen (Jev bills input tokens only), and you see its confidence.</p></div></div>
+    </div>
+
+    <div class="authcard">
+      <button id="connectBtn" class="primary">Sign in with Pollinations</button>
+      <p class="fine">You'll approve a one-time budget (default 5 Pollen) on pollinations.ai. The key stays in this tab only.</p>
+      <details class="manual">
+        <summary>Or paste your own API key</summary>
+        <div class="row">
+          <input id="keyInput" type="password" placeholder="sk_… from enter.pollinations.ai/keys" autocomplete="off">
+          <button id="keyBtn" class="ghost">Use key</button>
+        </div>
+      </details>
+      <p class="error" id="authError" hidden></p>
+    </div>
+
+    <p class="tryfirst">You can preview the first dilemma before connecting — the lever waits for no one.</p>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="screen" hidden>
+    <div class="progress"><div id="progressFill"></div></div>
+    <div class="proglabels" id="progLabels"></div>
+
+    <article class="scenecard">
+      <div class="scenehead">
+        <span class="kindchip" id="kindChip"></span>
+        <h2 id="sceneTitle"></h2>
+        <span class="counter" id="sceneCounter"></span>
+      </div>
+      <div id="sceneArt" class="art" aria-hidden="true"></div>
+      <p id="sceneStory" class="story"></p>
+
+      <div class="choices">
+        <button class="choice pull" id="btnIntervene"></button>
+        <div class="or">or</div>
+        <button class="choice refrain" id="btnRefrain"></button>
+      </div>
+
+      <div id="verdictNote" class="verdictnote" hidden></div>
+    </article>
+
+    <article class="jevcard" id="jevCard" hidden>
+      <div class="jevhead">
+        <span class="jevface">⚖️</span>
+        <div><b>Jev's verdict</b><p class="fine">typesafe/jev-1.13 · decision model</p></div>
+        <span class="chip tokens" id="tokenChip"></span>
+      </div>
+      <div class="verdictgrid">
+        <div class="vchoice">
+          <div class="bigverdict" id="jevChoice"></div>
+          <div class="confidence">
+            <svg viewBox="0 0 42 42" class="ring"><circle class="trackc" cx="21" cy="21" r="15.5"/><circle class="fillc" id="confRing" cx="21" cy="21" r="15.5"/></svg>
+            <span id="confText"></span> sure
+          </div>
+          <div class="probbar" id="probBar"></div>
+        </div>
+        <div class="vscores">
+          <div class="vlabel">Moral acceptability of acting</div>
+          <div class="meter" id="meterAct"></div>
+          <div class="vlabel">Moral acceptability of standing by</div>
+          <div class="meter" id="meterRefrain"></div>
+        </div>
+      </div>
+      <div class="agree" id="agreeBanner"></div>
+      <div class="philchip" id="philChip"></div>
+      <button class="primary" id="nextBtn"></button>
+    </article>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="screen-results" class="screen" hidden>
+    <h1 id="resultsHead"></h1>
+    <p class="lede" id="resultsSub"></p>
+    <div class="statsrow">
+      <div class="stat"><b id="statAgree"></b><span>you &amp; Jev agreed</span></div>
+      <div class="stat"><b id="statYou"></b><span>you intervened</span></div>
+      <div class="stat"><b id="statJev"></b><span>Jev intervened</span></div>
+      <div class="stat"><b id="statCost"></b><span>input tokens billed to you</span></div>
+    </div>
+    <table class="sheet" id="resultsTable"></table>
+    <div class="verdict" id="philVerdict"></div>
+    <div class="row center">
+      <button class="primary" id="replayBtn">Play again</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Decisions by <code>typesafe/jev-1.13</code> via
+    <a href="https://gen.pollinations.ai/docs" rel="noopener">gen.pollinations.ai</a> ·
+    you pay with your own Pollen (<a href="https://github.com/pollinations/pollinations/blob/main/BRING_YOUR_OWN_POLLEN.md" rel="noopener">BYOP</a>)</p>
+  <p>Inspired by Zach Landes' <a href="https://zachlandes.com/trolley-problem/" rel="noopener">Jev Meets the Trolley Problem</a>.
+    A game, not moral advice.</p>
+  <p><a href="https://pollinations.ai/?ref=badge" rel="noopener">Made with pollinations.ai</a> ·
+    <a href="https://github.com/Marcus-Mok-GH/jev-at-the-switch" rel="noopener">source</a></p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
