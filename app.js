@@ -400,12 +400,13 @@ function renderScenario() {
   renderProgress();
 }
 function needsKey() {
+  if (key) return false;
   const note = $("verdictNote");
-  note.innerHTML = key
-    ? ""
-    : "Your call is noted — <b>connect your Pollen wallet</b> to hear Jev's take on it.";
-  if (!key) show(note);
-  return !key;
+  note.innerHTML = "Your call is noted — <b>connect your Pollen wallet</b> to hear Jev's take on it, then make the call again.";
+  show(note);
+  $("btnIntervene").disabled = false;
+  $("btnRefrain").disabled = false;
+  return true;
 }
 async function choose(userIntervened) {
   const sc = SCENARIOS[idx];
@@ -553,9 +554,10 @@ function renderResults() {
 }
 
 /* ---------- screens & wiring ---------- */
+let peeked = false;
 function currentScreen() {
   if (answers.length > 0 && idx >= SCENARIOS.length) return "results";
-  return key || answers.length || idx > 0 ? "game" : "welcome";
+  return key || answers.length || peeked ? "game" : "welcome";
 }
 function showScreen(name) {
   hide($("screen-welcome"));
@@ -582,6 +584,10 @@ if (key) {
 }
 
 $("connectBtn").onclick = connect;
+$("peekBtn").onclick = () => {
+  peeked = true;
+  showScreen("game");
+};
 $("keyBtn").onclick = () => {
   const val = $("keyInput").value.trim();
   if (!val) return;
